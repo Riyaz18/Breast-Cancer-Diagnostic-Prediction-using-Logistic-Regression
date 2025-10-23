@@ -1,0 +1,114 @@
+# Project: Advanced Breast Cancer Diagnostic Prediction using Logistic Regression
+# Author: [Your Name]
+# Date: October 2025
+
+# ==============================================================================
+# 1. Setup and Library Import 📦
+# ==============================================================================
+# Import core libraries for data manipulation, analysis, and modeling.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, mean_squared_error, r2_score, f1_score, precision_score, recall_score, confusion_matrix
+import warnings
+warnings.filterwarnings('ignore')
+
+# Set professional plotting style
+sns.set_style("whitegrid")
+
+# ==============================================================================
+# 2. Data Loading and Preparation 💾
+# ==============================================================================
+# Load the Wisconsin Breast Cancer (Diagnostic) dataset
+cancer = load_breast_cancer()
+df = pd.DataFrame(cancer.data, columns=cancer.feature_names)
+# The target variable (0: Malignant, 1: Benign)
+df["Diagnosis"] = cancer.target
+
+# Initial Data Check
+print("--- Data Snapshot ---")
+print(df.head())
+print(f"\nTotal Instances: {len(df)}")
+print(f"Features: {df.shape[1] - 1}")
+
+# Check target balance
+print("\n--- Target Variable Distribution (0=Malignant, 1=Benign) ---")
+print(df['Diagnosis'].value_counts(normalize=True))
+
+# ==============================================================================
+# 3. Feature Scaling ⚖️
+# ==============================================================================
+# Separate features (X) and target (y)
+X = df.drop(columns=["Diagnosis"])
+y = df["Diagnosis"]
+
+# Standardize the features to ensure all features contribute equally to the model
+# and to improve the convergence of the Logistic Regression optimizer.
+Scalar = StandardScaler()
+X = Scalar.fit_transform(X)
+X = pd.DataFrame(X, columns=cancer.feature_names)
+
+print("\nFeatures successfully scaled (mean=0, std=1).")
+print(X.head())
+
+# ==============================================================================
+# 4. Data Splitting 🔄
+# ==============================================================================
+# Split data into training (80%) and testing (20%) sets.
+# Using a fixed random_state for reproducibility.
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+print(f"\nX_train shape: {X_train.shape}")
+print(f"X_test shape: {X_test.shape}")
+
+# ==============================================================================
+# 5. Model Training (Logistic Regression) 🧠
+# ==============================================================================
+# Initialize and train the Logistic Regression model, which is a strong linear
+# baseline for binary classification, especially after feature scaling.
+model = LogisticRegression(random_state=42)
+model.fit(X_train, y_train)
+
+# Generate predictions on the test set
+y_predict = model.predict(X_test)
+
+print("\nLogistic Regression Model Trained.")
+print(model) # Display model parameters
+
+# ==============================================================================
+# 6. Performance Evaluation 📊
+# ==============================================================================
+print("\n--- Model Performance Metrics (Test Set) ---")
+print(f"Accuracy: {accuracy_score(y_test, y_predict):.4f}")
+print(f"Precision: {precision_score(y_test, y_predict):.4f}")
+print(f"Recall: {recall_score(y_test, y_predict):.4f}")
+print(f"F1-Score: {f1_score(y_test, y_predict):.4f}")
+# Note: MSE and R2 are more relevant for regression, but are calculated here
+# for completeness as per the original code:
+print(f"Mean Squared Error (MSE): {mean_squared_error(y_test, y_predict):.4f}")
+print(f"R-squared (R2): {r2_score(y_test, y_predict):.4f}")
+
+# Visualize the Confusion Matrix for granular performance insight
+cm = confusion_matrix(y_test, y_predict)
+plt.figure(figsize=(6, 4))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=['Malignant (0)', 'Benign (1)'], 
+            yticklabels=['Malignant (0)', 'Benign (1)'])
+plt.xlabel('Predicted Label')
+plt.ylabel('Actual Label')
+plt.title('Confusion Matrix for Logistic Regression Model')
+plt.show()
+
+# ==============================================================================
+# 7. Conclusion and Future Work ✨
+# ==============================================================================
+# Analyze the key model metric (Recall is crucial for medical diagnostics)
+recall = recall_score(y_test, y_predict)
+print("\n--- Key Finding ---")
+print(f"The model achieved a Recall of {recall:.4f}, meaning it correctly identified {recall*100:.2f}% of all actual positive (Benign) cases.")
+print("For this medical application, **Recall** (Sensitivity) is the most critical metric as misclassifying a Malignant case (False Negative) is highly detrimental. Future work should focus on optimizing the model to maximize Recall for the Malignant class (by analyzing the inverse of the target variable).")
