@@ -1,0 +1,2 @@
+# Breast-Cancer-Diagnostic-Prediction-using-Logistic-Regression
+This project leverages the well-known Wisconsin Breast Cancer Diagnostic dataset to develop a high-accuracy binary classification model. The core methodology involves aggressive **feature standardization** and the application of a **Logistic Regression** classifier, chosen for its speed, and robust performance on linearly separable data.
